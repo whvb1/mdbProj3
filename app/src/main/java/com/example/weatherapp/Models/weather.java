@@ -16,7 +16,96 @@ public class weather {
     private String timezone;
     private int nearestStormDistance;
 
+    public weather(String name, int latitude, int longitude, String summary, int temperature, String icon, int moonPhase, int visibility, String timezone, int nearestStormDistance) {
+        this.name = name;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.summary = summary;
+        this.temperature = temperature;
+        this.icon = icon;
+        this.moonPhase = moonPhase;
+        this.visibility = visibility;
+        this.timezone = timezone;
+        this.nearestStormDistance = nearestStormDistance;
+    }
 
+    public String getName() {
+        return name;
+    }
 
+    public void setName(String name) {
+        this.name = name;
+    }
 
+    public int getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(int latitude) {
+        this.latitude = latitude;
+    }
+
+    public int getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(int longitude) {
+        this.longitude = longitude;
+    }
+
+    public String getSummary() {
+        return summary;
+    }
+
+    public void setSummary(String summary) {
+        this.summary = summary;
+    }
+
+    public int getTemperature() {
+        return temperature;
+    }
+
+    public void setTemperature(int temperature) {
+        this.temperature = temperature;
+    }
+
+    public String getIcon() {
+        return icon;
+    }
+
+    public void setIcon(String icon) {
+        this.icon = icon;
+    }
+
+    public int getMoonPhase() {
+        return moonPhase;
+    }
+
+    public void setMoonPhase(int moonPhase) {
+        this.moonPhase = moonPhase;
+    }
+
+    public int getVisibility() {
+        return visibility;
+    }
+
+    public void setVisibility(int visibility) {
+        this.visibility = visibility;
+    }
+
+    public String getTimezone() {
+        return timezone;
+    }
+
+    public void setTimezone(String timezone) {
+        this.timezone = timezone;
+    }
+
+    public int getNearestStormDistance() {
+        return nearestStormDistance;
+    }
+
+    public void setNearestStormDistance(int nearestStormDistance) {
+        this.nearestStormDistance = nearestStormDistance;
+    }
 }
