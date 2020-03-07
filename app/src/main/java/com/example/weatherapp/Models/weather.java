@@ -35,6 +35,22 @@ public class weather {
         return name;
     }
 
+    @Override
+    public String toString() {
+        return "weather{" +
+                "name='" + name + '\'' +
+                ", latitude=" + latitude +
+                ", longitude=" + longitude +
+                ", summary='" + summary + '\'' +
+                ", temperature=" + temperature +
+                ", icon='" + icon + '\'' +
+                ", moonPhase=" + moonPhase +
+                ", visibility=" + visibility +
+                ", timezone='" + timezone + '\'' +
+                ", nearestStormDistance=" + nearestStormDistance +
+                '}';
+    }
+
     public void setName(String name) {
         this.name = name;
     }

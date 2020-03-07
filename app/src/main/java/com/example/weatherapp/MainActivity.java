@@ -3,6 +3,8 @@ package com.example.weatherapp;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
 import android.app.DownloadManager;
@@ -10,7 +12,9 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -21,6 +25,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.example.weatherapp.Adapters.ForecastAdapter;
 import com.example.weatherapp.Models.weather;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -40,12 +45,17 @@ public class MainActivity extends AppCompatActivity{
     private FusedLocationProviderClient fusedLocationClient;
     Location localCation;
     TextView txtLocation, txtTemp;
+    Button btnRefresh;
+    RecyclerView recycleWeather;
+    ForecastAdapter forecastAdapter;
     private final int MY_PERMISSIONS_REQUEST_LOCATION = 123;
     private boolean locationPermission;
     private weather currWeather = new weather();
     private List<weather> forecast = new ArrayList<>();
     private String api_key = "7e1bc3a2447407b3b5bc7dfd5f68b1c8";
     private String url;
+
+
 
 
     @Override
@@ -56,14 +66,39 @@ public class MainActivity extends AppCompatActivity{
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         txtLocation = findViewById(R.id.txtLocation);
         txtTemp = findViewById(R.id.txtTemp);
+        btnRefresh = findViewById(R.id.btnRefresh);
+        btnRefresh.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Save the current text in the txtNote field into the note.txt file.
+                setCurrWeather(localCation.getLatitude(),localCation.getLongitude());
+                txtTemp.setText(Integer.toString(currWeather.getTemperature()));
+                // Show a toast that the file was saved.
+                Toast refreshed = Toast.makeText(getApplicationContext(), "Refreshed", Toast.LENGTH_SHORT);
+                refreshed.show();
+            }
+        });
+
+        // Initialize the recycler view.
+        recycleWeather = findViewById(R.id.recycleWeather);
+        // Initialize the recycler view adapter. If this causes a JSONException, then there
+        // either no json file stored right now, or it is malformed-formed. Either way, it will
+        // create a brand new .json file.
+
+        forecastAdapter = new ForecastAdapter((ArrayList)forecast);
+        // Set the adapter for the recycler view.
+        recycleWeather.setAdapter(forecastAdapter);
+        // Set the layout of the recycler manager. This will determine how the
+        // rows will be displayed. LinearLayout will set them to be vertically
+        // linear (i.e one after the other, on top of each other).
+        recycleWeather.setLayoutManager(new LinearLayoutManager(this));
 
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_CALENDAR)
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
             permissionHandler(this);
         }
         System.out.println(locationPermission);
-        if(locationPermission) {
             System.out.println("Attempting to retrieve location");
             fusedLocationClient.getLastLocation()
                     .addOnSuccessListener(this, new OnSuccessListener<Location>() {
@@ -76,17 +111,16 @@ public class MainActivity extends AppCompatActivity{
                                 double lat = localCation.getLatitude();
                                 double log = localCation.getLongitude();
                                 txtLocation.setText(String.format("Longitude: %.5f | Latitude: %.5f",log,lat));
-                                getWeather(lat,log);
-                                txtTemp.setText(currWeather.getTemperature());
+                                setCurrWeather(lat,log);
+                                System.out.println(currWeather.getTemperature());
+                                txtTemp.setText(Integer.toString(currWeather.getTemperature()));
                             } else {
                                 Toast toast = Toast.makeText(getApplicationContext(), "No Location Found", Toast.LENGTH_LONG);
                                 toast.show();
+                                txtLocation.setText("Location Services Disabled");
                             }
                         }
                     });
-        } else {
-            txtLocation.setText("Location Services Disabled");
-        }
 
 
 
@@ -105,8 +139,9 @@ public class MainActivity extends AppCompatActivity{
     }
 
     private void permissionHandler(Context activityContext) {
+        System.out.println("calling permission handler");
         if (ContextCompat.checkSelfPermission(activityContext,
-                Manifest.permission.READ_CONTACTS)
+                Manifest.permission.ACCESS_COARSE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
 
             // Permission is not granted
@@ -115,7 +150,8 @@ public class MainActivity extends AppCompatActivity{
                     Manifest.permission.ACCESS_COARSE_LOCATION)) {
                 Toast toast = Toast.makeText(getApplicationContext(), "Weather App will not work without location", Toast.LENGTH_LONG);
                 toast.show();
-                locationPermission = false;
+                Log.d("permission",String.format("requesting the permission"));
+                locationPermission = true;
                 // Show an explanation to the user *asynchronously* -- don't block
                 // this thread waiting for the user's response! After the user
                 // sees the explanation, try again to request the permission.
@@ -156,12 +192,14 @@ public class MainActivity extends AppCompatActivity{
         }
     }
 
-    public weather getWeather(double longitude, double latitude) {
+    public void setCurrWeather(double longitude, double latitude) {
+        System.out.println("calling setCurrWeather");
         if(locationPermission) {
             url  = String.format("https://api.darksky.net/forecast/%s/%f,%f",api_key,latitude,longitude);
         }
+        url = "https://api.darksky.net/forecast/7e1bc3a2447407b3b5bc7dfd5f68b1c8/37.8267,-122.4233";
         // Instantiate the RequestQueue.
-        RequestQueue queue = Volley.newRequestQueue(this);
+        RequestQueue queue = Volley.newRequestQueue(MainActivity.this);
         // Request a string response from the provided URL.
         JsonObjectRequest jos = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
             @Override
@@ -171,28 +209,29 @@ public class MainActivity extends AppCompatActivity{
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-
+                error.printStackTrace();
             }
         });
         // Add the request to the RequestQueue.
         queue.add(jos);
-
-        return currWeather;
-
     }
 
     public weather toWeather1(JSONObject jsonObject, String key) {
+        System.out.println("calling toWeather1");
         weather weatherObj = new weather();
         try {
-            if (jsonObject.get(key) instanceof JSONObject) {
-                System.out.println("creating a new weather object: "+key);
-                JSONObject obj = ((JSONObject) jsonObject.get("currently"));
-                weatherObj.setIcon(obj.getString("icon"));
-                weatherObj.setMoonPhase(obj.getInt("moonphase"));
-                weatherObj.setName(key);
-                weatherObj.setTemperature(obj.getInt("temperature"));
-            }
-        } catch (JSONException e) {
+            Log.d("weatherAPI",String.format("creating a new weather object: %s",key));
+            System.out.println("creating a new weather object: "+key);
+            JSONObject obj = ((JSONObject) jsonObject.get("currently"));
+            weatherObj.setIcon(obj.getString("icon"));
+            //weatherObj.setMoonPhase(obj.getInt("moonphase"));
+            weatherObj.setName(key);
+            weatherObj.setTemperature(obj.getInt("temperature"));
+            weatherObj.setSummary(obj.getString("summary"));
+            weatherObj.setTimezone(obj.getString("timezone"));
+            System.out.println("weather object: "+weatherObj.toString());
+    } catch (JSONException e) {
+            e.printStackTrace();
 
         }
 
