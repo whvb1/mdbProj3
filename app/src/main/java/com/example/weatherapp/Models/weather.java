@@ -29,6 +29,8 @@ public class weather {
         this.nearestStormDistance = nearestStormDistance;
     }
 
+    public weather () {    }
+
     public String getName() {
         return name;
     }
