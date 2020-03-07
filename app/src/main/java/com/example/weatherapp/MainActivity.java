@@ -44,11 +44,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
+import static java.lang.Thread.sleep;
+
 public class MainActivity extends AppCompatActivity{
 
     private FusedLocationProviderClient fusedLocationClient;
     Location localCation;
-    TextView txtLocation, txtTemp;
+    TextView txtLocation, txtTemp, txtVisibilty, txtTimeZone, txtSummary;
     Button btnRefresh;
     RecyclerView recycleWeather;
     ForecastAdapter forecastAdapter;
@@ -87,6 +89,9 @@ public class MainActivity extends AppCompatActivity{
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         txtLocation = findViewById(R.id.txtLocation);
         txtTemp = findViewById(R.id.txtTemp);
+        txtTimeZone = findViewById(R.id.txtTimeZone);
+        txtVisibilty = findViewById(R.id.txtVisibility);
+        txtSummary = findViewById(R.id.txtSummary);
         btnRefresh = findViewById(R.id.btnRefresh);
         btnRefresh.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -96,6 +101,7 @@ public class MainActivity extends AppCompatActivity{
                 txtTemp.setText(Integer.toString(currWeather.getTemperature()));
                 forecastAdapter.setData((ArrayList)forecast);
                 Log.d("refresh",forecast.toString());
+                setTexts();
                 // Show a toast that the file was saved.
                 Toast refreshed = Toast.makeText(getApplicationContext(), "Refreshed", Toast.LENGTH_SHORT);
                 refreshed.show();
@@ -118,6 +124,11 @@ public class MainActivity extends AppCompatActivity{
         base = inverseMapper.get(dayOfTheWeek);
 
 
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         // Initialize the recycler view.
         recycleWeather = findViewById(R.id.recycleWeather);
         forecastAdapter = new ForecastAdapter((ArrayList)forecast);
@@ -152,6 +163,9 @@ public class MainActivity extends AppCompatActivity{
                             }
                         }
                     });
+
+
+            setTexts();
 
     }
 
@@ -249,8 +263,10 @@ public class MainActivity extends AppCompatActivity{
             weatherObj.setIcon(obj.getString("icon"));
             //weatherObj.setMoonPhase(obj.getInt("moonphase"));
             weatherObj.setName(key);
+            weatherObj.setTimezone(jsonObject.getString("timezone"));
             weatherObj.setTemperature(obj.getInt("temperature"));
             weatherObj.setSummary(obj.getString("summary"));
+            weatherObj.setVisibility(obj.getInt("visibility"));
             System.out.println("weather object: "+weatherObj.toString());
     } catch (JSONException e) {
             e.printStackTrace();
@@ -288,7 +304,7 @@ public class MainActivity extends AppCompatActivity{
             e.printStackTrace();
         }
         Log.d("forecast: days",days.toString());
-           for(int i = 1; i < days.length(); i++) {
+           for(int i = 0; i < days.length(); i++) {
                JSONObject day = null;
                try {
                    day = (JSONObject)days.get(i);
@@ -316,6 +332,15 @@ public class MainActivity extends AppCompatActivity{
     public int wrap(int i) {
         i = i%dayMapper.size();
         return i;
+
+    }
+
+    public void setTexts() {
+        //txtLocation.setText();
+        txtTemp.setText(Integer.toString(currWeather.getTemperature()));
+        txtTimeZone.setText(currWeather.getTimezone());
+        txtVisibilty.setText("Visibility: "+Integer.toString(currWeather.getVisibility()));
+        txtSummary.setText(currWeather.getSummary());
 
     }
 }
