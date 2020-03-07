@@ -36,7 +36,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
@@ -51,9 +55,26 @@ public class MainActivity extends AppCompatActivity{
     private final int MY_PERMISSIONS_REQUEST_LOCATION = 123;
     private boolean locationPermission;
     private weather currWeather = new weather();
+    private List<weather> forecastDummy = new ArrayList<>();
     private List<weather> forecast = new ArrayList<>();
     private String api_key = "7e1bc3a2447407b3b5bc7dfd5f68b1c8";
     private String url;
+    private String forecast_description;
+    private String forecast_icon;
+    weather day1 = new weather();
+    weather day2 = new weather();
+    weather day3 = new weather();
+    private int base;
+    private HashMap<Integer, String> dayMapper = new HashMap<>();
+    private HashMap<String, Integer> inverseMapper = new HashMap<>();
+    SimpleDateFormat sdf = new SimpleDateFormat("EEEE");
+    Date d = new Date();
+    String dayOfTheWeek = sdf.format(d);
+
+
+
+
+
 
 
 
@@ -73,24 +94,34 @@ public class MainActivity extends AppCompatActivity{
                 // Save the current text in the txtNote field into the note.txt file.
                 setCurrWeather(localCation.getLatitude(),localCation.getLongitude());
                 txtTemp.setText(Integer.toString(currWeather.getTemperature()));
+                forecastAdapter.setData((ArrayList)forecast);
+                Log.d("refresh",forecast.toString());
                 // Show a toast that the file was saved.
                 Toast refreshed = Toast.makeText(getApplicationContext(), "Refreshed", Toast.LENGTH_SHORT);
                 refreshed.show();
             }
         });
 
+        dayMapper.put(0,"Monday");
+        dayMapper.put(1,"Tuesday");
+        dayMapper.put(2,"Wednesday");
+        dayMapper.put(3,"Thursday");
+        dayMapper.put(4,"Friday");
+        dayMapper.put(5,"Saturday");
+        dayMapper.put(6,"Sunday");
+
+
+
+        for(int i = 0; i < dayMapper.size(); i ++) {
+            inverseMapper.put(dayMapper.get(i), i);
+        }
+        base = inverseMapper.get(dayOfTheWeek);
+
+
         // Initialize the recycler view.
         recycleWeather = findViewById(R.id.recycleWeather);
-        // Initialize the recycler view adapter. If this causes a JSONException, then there
-        // either no json file stored right now, or it is malformed-formed. Either way, it will
-        // create a brand new .json file.
-
         forecastAdapter = new ForecastAdapter((ArrayList)forecast);
-        // Set the adapter for the recycler view.
         recycleWeather.setAdapter(forecastAdapter);
-        // Set the layout of the recycler manager. This will determine how the
-        // rows will be displayed. LinearLayout will set them to be vertically
-        // linear (i.e one after the other, on top of each other).
         recycleWeather.setLayoutManager(new LinearLayoutManager(this));
 
 
@@ -121,15 +152,6 @@ public class MainActivity extends AppCompatActivity{
                             }
                         }
                     });
-
-
-
-
-
-
-
-
-
 
     }
 
@@ -205,6 +227,7 @@ public class MainActivity extends AppCompatActivity{
             @Override
             public void onResponse(JSONObject response) {
                 currWeather = toWeather1(response,"currently");
+                toForecast(response,"daily");
             }
         }, new Response.ErrorListener() {
             @Override
@@ -228,7 +251,6 @@ public class MainActivity extends AppCompatActivity{
             weatherObj.setName(key);
             weatherObj.setTemperature(obj.getInt("temperature"));
             weatherObj.setSummary(obj.getString("summary"));
-            weatherObj.setTimezone(obj.getString("timezone"));
             System.out.println("weather object: "+weatherObj.toString());
     } catch (JSONException e) {
             e.printStackTrace();
@@ -249,5 +271,51 @@ public class MainActivity extends AppCompatActivity{
     return weatherObj;
     }
 
+    public void toForecast(JSONObject jsonObject, String key) {
+        System.out.println("calling toForecast");
+        //can work for daily, minutely, etc.
+        try {
+            forecast_description = jsonObject.getJSONObject(key).getString("summary");
+            forecast_icon = jsonObject.getJSONObject(key).getString("icon");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        JSONArray days = null;
+        try {
+            days = jsonObject.getJSONObject(key).getJSONArray("data");
+            Log.d("forecast: success days",days.toString());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        Log.d("forecast: days",days.toString());
+           for(int i = 1; i < days.length(); i++) {
+               JSONObject day = null;
+               try {
+                   day = (JSONObject)days.get(i);
+                   if (day instanceof JSONObject) {
+                       Log.d("forecast: day",day.toString());
+                       JSONObject obj = day;
+                       weather weath = new weather();
+                       weath.setName(dayMapper.get(wrap(base+i)));
+                       weath.setTemperature(obj.getInt("temperatureHigh"));
+                       weath.setTemperatureHigh(obj.getInt("temperatureHigh"));
+                       weath.setTemperatureLow(obj.getInt("temperatureLow"));
+                       weath.setSummary(obj.getString("summary"));
+                       //weath.setMoonPhase(obj.getDouble("moonphase"));
+                       forecast.add(weath);
+                       Log.d("forecast: FORECAST",forecast.toString());
+                   }
+               } catch (JSONException ex) {
+                   ex.printStackTrace();
+               }
 
+           }
+    }
+
+
+    public int wrap(int i) {
+        i = i%dayMapper.size();
+        return i;
+
+    }
 }

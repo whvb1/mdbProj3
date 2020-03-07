@@ -1,7 +1,6 @@
 package com.example.weatherapp.Adapters;
 
 import android.content.Context;
-import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -47,7 +46,9 @@ public class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.weathe
         // Get an element from your dataset at this position
         // Replace the contents of the view with that element
         holder.txtName_small.setText(weathers.get(position).getName());
-        holder.txtTemp_small.setText(weathers.get(position).getTemperature());
+        holder.txtHigh_small.setText(Integer.toString(weathers.get(position).getTemperatureHigh()));
+        holder.txtLow_small.setText(Integer.toString(weathers.get(position).getTemperatureLow()));
+        //holder.txtHigh_small.setText(Integer.toString(weathers.get(position).getTemperature()));
 
     }
 
@@ -70,10 +71,13 @@ public class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.weathe
         TextView txtName_small;
         Button btnEdit;
         TextView txtTemp_small;
+        TextView txtHigh_small, txtLow_small;
+
         public weatherViewHolder(View rowView) {
             super(rowView);
             txtName_small = rowView.findViewById(R.id.txtName_small);
-            txtTemp_small = rowView.findViewById(R.id.txtTemp_small);
+            txtHigh_small = rowView.findViewById(R.id.txtHigh_small);
+            txtLow_small = rowView.findViewById(R.id.txtLow_small);
         }
     }
 }

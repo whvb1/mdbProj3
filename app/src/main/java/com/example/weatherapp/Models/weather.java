@@ -10,13 +10,32 @@ public class weather {
     private int longitude;
     private String summary;
     private int temperature;
+
+    public int getTemperatureHigh() {
+        return temperatureHigh;
+    }
+
+    public void setTemperatureHigh(int temperatureHigh) {
+        this.temperatureHigh = temperatureHigh;
+    }
+
+    public int getTemperatureLow() {
+        return temperatureLow;
+    }
+
+    public void setTemperatureLow(int temperatureLow) {
+        this.temperatureLow = temperatureLow;
+    }
+
+    private int temperatureHigh;
+    private int temperatureLow;
     private String icon;
-    private int moonPhase;
+    private double moonPhase;
     private int visibility;
     private String timezone;
     private int nearestStormDistance;
 
-    public weather(String name, int latitude, int longitude, String summary, int temperature, String icon, int moonPhase, int visibility, String timezone, int nearestStormDistance) {
+    public weather(String name, int latitude, int longitude, String summary, int temperature, String icon, double moonPhase, int visibility, String timezone, int nearestStormDistance) {
         this.name = name;
         this.latitude = latitude;
         this.longitude = longitude;
@@ -95,11 +114,11 @@ public class weather {
         this.icon = icon;
     }
 
-    public int getMoonPhase() {
+    public double getMoonPhase() {
         return moonPhase;
     }
 
-    public void setMoonPhase(int moonPhase) {
+    public void setMoonPhase(double moonPhase) {
         this.moonPhase = moonPhase;
     }
 
